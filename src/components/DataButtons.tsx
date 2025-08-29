@@ -6,9 +6,20 @@ type ServerData = {
   time: string;
 };
 
+type ApiResponse = {
+  message: string;
+  time: string;
+};
+
+type ApiError = {
+  error: string;
+};
+
+type ApiData = ApiResponse | ApiError;
+
 export default function DataButtons({ serverData }: { serverData: ServerData }) {
   const [showServer, setShowServer] = useState(false);
-  const [apiData, setApiData] = useState<any>(null);
+  const [apiData, setApiData] = useState<ApiData | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function fetchApi() {
@@ -16,10 +27,11 @@ export default function DataButtons({ serverData }: { serverData: ServerData }) 
     setApiData(null);
     try {
       const res = await fetch('/api/data');
-      const json = await res.json();
+      const json = await res.json() as ApiResponse;
       setApiData(json);
-    } catch (e: any) {
-      setApiData({ error: e?.message ?? String(e) });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setApiData({ error: errorMessage });
     } finally {
       setLoading(false);
     }
