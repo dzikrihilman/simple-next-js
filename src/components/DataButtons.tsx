@@ -20,7 +20,9 @@ type ApiData = ApiResponse | ApiError;
 export default function DataButtons({ serverData }: { serverData: ServerData }) {
   const [showServer, setShowServer] = useState(false);
   const [apiData, setApiData] = useState<ApiData | null>(null);
+  const [dbData, setDbData] = useState<ApiData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [dbLoading, setDbLoading] = useState(false);
 
   async function fetchApi() {
     setLoading(true);
@@ -34,6 +36,21 @@ export default function DataButtons({ serverData }: { serverData: ServerData }) 
       setApiData({ error: errorMessage });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchDbData() {
+    setDbLoading(true);
+    setDbData(null);
+    try {
+      const res = await fetch('/api/db-data');
+      const json = await res.json();
+      setDbData(json);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      setDbData({ error: errorMessage });
+    } finally {
+      setDbLoading(false);
     }
   }
 
@@ -64,6 +81,21 @@ export default function DataButtons({ serverData }: { serverData: ServerData }) 
         {apiData && (
           <pre className="mt-2 p-3 rounded text-black bg-primary">
             {JSON.stringify(apiData, null, 2)}
+          </pre>
+        )}
+      </div>
+
+      <div>
+        <button
+          onClick={fetchDbData}
+          disabled={dbLoading}
+          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {dbLoading ? 'Memuat...' : 'Fetch data dari Database'}
+        </button>
+        {dbData && (
+          <pre className="mt-2 p-3 rounded text-black bg-primary">
+            {JSON.stringify(dbData, null, 2)}
           </pre>
         )}
       </div>
